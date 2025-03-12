@@ -2,18 +2,25 @@ from time import sleep
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from click import style, echo
-def getAIResponse(driver: webdriver):
+def scrapAiResponse(driver: webdriver):
     try:
-        load_more_button = driver.find_element(by=By.ID,value="llm-show-more-button")
-        while (not load_more_button.is_displayed()):
-            sleep(.1)
-        load_more_button.click()
+        while (True):
+            try:
+                load_more_button = driver.find_element(by=By.ID,value="llm-show-more-button")
+                while (not load_more_button.is_displayed()):
+                    sleep(.1)
+                load_more_button.click()
+                break
+            except Exception as e:
+                echo(style("AI Response not available for this query",fg="red"))
+                return ""
         while (True):
             try:
                 driver.find_element(by=By.ID,value="chatllm-conversation")
                 break
             except Exception as e:
                 sleep(.1)
+        sleep(0.5) #just some little extra delay
         llm_title_element = driver.find_element(by=By.ID,value="chatllm-title")
         llm_body_element = driver.find_element(by=By.ID,value="chatllm-main-answer-content")
         llm_body_element = driver.find_element(by=By.CLASS_NAME, value="llm-output")
@@ -31,7 +38,6 @@ def getAIResponse(driver: webdriver):
             llm_response+="\n"
         return llm_response
     except Exception as e:
-        with open("logs.txt","w") as file:
-            file.write(e)
+        print(e)
         echo(style("Some Error Occured",fg="red"))
         return ""
